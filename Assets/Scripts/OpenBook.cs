@@ -12,8 +12,8 @@ namespace Popub_Book
         public Vector3 targetScale = new Vector3(5.947747f, 5.947747f, 7.929536f);
         public Vector3 targetposition = new Vector3(-3.42966437f, 2.9719398f, -3.44442201f);
         public Vector3 targetpositionButterfly = new Vector3(4.34700012f, 2.37199998f, 1.21000004f);
-        public Vector3 targetpositionBee = new Vector3(3.2579999f, 5.91499996f, 13.7060003f);
-        public Vector3 targetpositionmainflower = new Vector3(3.30999994f, 5.79400015f, 14.5450001f);
+        public Vector3 targetpositionBee = new Vector3(3.2579999f, 6.5f, 13.7060003f);
+        public Vector3 targetpositionmainflower = new Vector3(3.30999994f, 6.4f, 14.5450001f);
         public Vector3 targetpositioncamera = new Vector3(5.23025799f, 6.54249954f, 13.9532461f);
         private Vector3 targetpositionButterflyafterbookopen;
         public Transform landscalleft;
@@ -29,15 +29,21 @@ namespace Popub_Book
         private Vector3 originalpositionbee;
         private Vector3 originalpositionmainflower;
         private Vector3 originalpositionButterfly;
-        private Vector3 originalpositioncamera = new Vector3(11.0799999f,8.03892803f,13.5003252f);
-        public float speed = 30F;
+        private Vector3 originalpositioncamera;
         public float scalspeed = 0.5F;
         bool bookopen;
         bool closebook;
+        public Transform target;
+        public float distance = 8f;
+        public float rotationSpeed = 50.0f;
+        public float lerpSpeed = 5.0f; 
+        private Vector3 offset;
+        private Vector3 targetOffset; 
 
 
         void Start()
         {
+            originalpositioncamera = Bookcamera.transform.localPosition+new Vector3(2f,0,0);
             originalpositionbee = Bee.transform.localPosition;
             originalpositionmainflower = MainFlower.transform.localPosition;
             Bee.SetActive(false);
@@ -46,6 +52,8 @@ namespace Popub_Book
             originalScaleright = landscalright.localScale;
             originalpositionright = landscalright.localPosition;
             originalpositionButterfly = Butterfly.localPosition;
+            offset = Bookcamera.transform.position + new Vector3(0,0,-distance);
+            targetOffset = offset;
         }
 
         void Update()
@@ -67,7 +75,6 @@ namespace Popub_Book
                     Bee.SetActive(true);
                     MainFlower.SetActive(true);
                     targetpositionButterflyafterbookopen = new Vector3(1.79999995f, 3.8900001f, 2.06999993f);
-                    speed = 0;
                     landscalleft.localScale = targetScale;
                     landscalright.localScale = targetScale;
                     landscalright.localPosition = targetposition;
@@ -160,39 +167,56 @@ namespace Popub_Book
                             originalpositioncamera,
                             scalspeed* Time.deltaTime
                     );
-
-                        landscalleft.localScale = Vector3.Lerp(
+                    landscalleft.localScale = Vector3.Lerp(
                             landscalleft.localScale,
                             originalScale,
                             scalspeed * Time.deltaTime
-                        );
-                        landscalright.localScale = Vector3.Lerp(
+                    );
+                    landscalright.localScale = Vector3.Lerp(
                                 landscalright.localScale,
                                 originalScaleright,
                                 scalspeed * Time.deltaTime
-                            );
-                        landscalright.localPosition = Vector3.Lerp(
+                    );
+                    landscalright.localPosition = Vector3.Lerp(
                                 landscalright.localPosition,
                                 originalpositionright,
                                 scalspeed * Time.deltaTime
-                        );
-                        Butterfly.localPosition = Vector3.Lerp(
+                    );
+                    Butterfly.localPosition = Vector3.Lerp(
                                 Butterfly.localPosition,
                                 originalpositionButterfly,
                                 scalspeed * Time.deltaTime
-                        );
-                        Bee.transform.localPosition = Vector3.Lerp(
+                    );
+                    Bee.transform.localPosition = Vector3.Lerp(
                                 Bee.transform.localPosition,
                                 originalpositionbee,
                                 scalspeed * Time.deltaTime
-                        );
-                        MainFlower.transform.localPosition = Vector3.Lerp(
+                    );
+                    MainFlower.transform.localPosition = Vector3.Lerp(
                                 MainFlower.transform.localPosition,
                                 originalpositionmainflower,
                                 scalspeed * Time.deltaTime
-                        );
+                    );
                 }
                 
+            }
+
+            if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow))
+            {
+                float horizontal = 0f;
+                float vertical = 0f;
+                if (Input.GetKey(KeyCode.LeftArrow))
+                {
+                    horizontal = rotationSpeed * Time.deltaTime;
+                }
+                if (Input.GetKey(KeyCode.RightArrow))
+                {
+                    horizontal = -rotationSpeed * Time.deltaTime;
+                }
+                targetOffset = Quaternion.Euler(vertical, horizontal, 0) * targetOffset;
+                offset = Vector3.Lerp(offset, targetOffset, lerpSpeed * Time.deltaTime);
+                Bookcamera.transform.position = target.position + offset;
+                Bookcamera.transform.LookAt(target);
             }
 
         }
